@@ -1,6 +1,9 @@
 const MAX_WORDS = 80;
 const normalize = v => String(v ?? "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z0-9' ]/g, " ").replace(/\s+/g, " ").trim();
 const words = s => s.split(" ").filter(Boolean);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+// Words that must never be stored as a name ("call me later", "my name is not important").
+const NOT_NAMES = new Set(["not", "sure", "fine", "good", "bad", "tired", "here", "back", "okay", "ok", "happy", "sad", "sorry", "just", "very", "so", "the", "going", "feeling", "really", "later", "maybe", "when", "if", "crazy", "stupid", "important", "none", "nothing"]);
 
 function parseScript(source) {
   const d = { initial: "", final: "", quit: [], pre: new Map(), post: new Map(), synonyms: {}, keywords: [] };
@@ -65,7 +68,54 @@ export class ElizaEngine {
 
   reset() {
     this.closed = false; this.memory = []; this.last = "";
+    // Step 1.1: what Nutrono has learned about the user this session.
+    this.profile = { name: null, facts: new Map() };
+    this.recalled = new Set();
+    this.turns = 0;
     for (const k of this.data.keywords) for (const d of k.decomps) d.cursor = 0;
+  }
+
+  // Step 1.1: learn the user's name and "my X is Y" facts; answer questions about them.
+  // Returns a reply string when the message is about the user's profile, otherwise null.
+  learn(raw) {
+    const t = raw.trim(), p = this.profile;
+    let m;
+    if ((m = t.match(/\b(?:my name is|call me|i am called|i'm called|people call me)\s+([a-z][a-z'-]{1,19})\b/i)) && !NOT_NAMES.has(m[1].toLowerCase())) {
+      const before = p.name;
+      p.name = cap(m[1].toLowerCase());
+      return before && before !== p.name
+        ? `Understood. I will call you ${p.name} from now on.`
+        : `Nice to meet you, ${p.name}. What would you like to talk about?`;
+    }
+    if (/\b(what is my name|what's my name|do you know my name|who am i)\b/i.test(t))
+      return p.name ? `Your name is ${p.name}.` : "I do not know your name yet. What should I call you?";
+    if ((m = t.match(/\bwhat(?:'s| is| are) my ([a-z]+(?: [a-z]+)?)\s*\??$/i))) {
+      const key = m[1].toLowerCase(), val = p.facts.get(key);
+      if (val) return `Your ${key} is ${val}.`;
+    }
+    if ((m = t.match(/\bmy ([a-z]+(?: [a-z]+)?) (?:is|are) ([^.,;!?]{1,60})/i))) {
+      const key = m[1].toLowerCase();
+      if (!NOT_NAMES.has(key) && key !== "name") p.facts.set(key, this.reflect(normalize(m[2])));
+    }
+    return null;
+  }
+
+  // Step 1.1: use the name now and then, so replies feel personal.
+  personalize(text) {
+    this.turns++;
+    const name = this.profile.name;
+    if (!name || this.turns % 5 !== 0 || text.includes(name)) return text;
+    return /[.?!]$/.test(text) ? text.replace(/([.?!])$/, `, ${name}$1`) : `${text}, ${name}`;
+  }
+
+  // Step 1.1: bring back something the user said earlier (each fact once).
+  recall() {
+    for (const [key, val] of this.profile.facts) {
+      if (this.recalled.has(key)) continue;
+      this.recalled.add(key);
+      return `Earlier you told me that your ${key} is ${val}. Does that connect to what you are saying now?`;
+    }
+    return null;
   }
 
   reflect(text) {
@@ -114,6 +164,8 @@ export class ElizaEngine {
       this.closed = true;
       return { text: this.data.final || "Goodbye.", done: true };
     }
+    const learned = this.learn(raw);
+    if (learned) return { text: this.personalize(learned), done: false, keyword: "profile" };
     // Classic clause handling: use the first clause (split at . , ; ! ?) that holds a keyword.
     const clauses = raw.split(/[.,;!?]+/).map(c => words(sub(normalize(c))).slice(0, MAX_WORDS)).filter(c => c.length);
     const known = c => c.filter(w => this.data.byWord.has(w) && w !== "xnone");
@@ -122,10 +174,12 @@ export class ElizaEngine {
       .sort((a, b) => b.rank - a.rank || clause.indexOf(a.word) - clause.indexOf(b.word));
     for (const key of found) {
       const out = this.apply(key, clause);
-      if (out) { this.last = out; return { text: out, done: false, keyword: key.word }; }
+      if (out) { this.last = out; return { text: this.personalize(out), done: false, keyword: key.word }; }
     }
-    if (this.memory.length) return { text: this.memory.shift(), done: false, keyword: "memory" };
-    return { text: this.pick("xnone", clause, "Please go on."), done: false, keyword: "xnone" };
+    if (this.memory.length) return { text: this.personalize(this.memory.shift()), done: false, keyword: "memory" };
+    const recalled = this.recall();
+    if (recalled) return { text: this.personalize(recalled), done: false, keyword: "recall" };
+    return { text: this.personalize(this.pick("xnone", clause, "Please go on.")), done: false, keyword: "xnone" };
   }
 
   pick(word, input, fallback) {

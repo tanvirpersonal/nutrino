@@ -30,7 +30,7 @@ Legend: `[x]` done and pushed, `[~]` in progress, `[ ]` not started.
 - [x] 0.2 Update `README.md` project description
 
 ### Phase 1 - Smarter conversation core
-- [ ] 1.1 Conversation memory: remember the user's name, and facts they state (`my X is Y`)
+- [x] 1.1 Conversation memory: remember the user's name, and facts they state (`my X is Y`)
 - [ ] 1.2 Intent detection: greetings, thanks, questions, yes/no, farewells
 - [ ] 1.3 Sentiment detection: mood-aware replies (sad, angry, happy, anxious)
 - [ ] 1.4 Typo tolerance: fuzzy matching for misspelled keywords
@@ -55,3 +55,4 @@ Legend: `[x]` done and pushed, `[~]` in progress, `[ ]` not started.
 |------|------|-------------|
 | 2026-11-23 | Setup | README with roadmap created |
 | 2026-11-23 | 0.1 | Branding renamed to Nutrono (UI text, title, logo letter). GitHub repo name is still `nutrino`; rename it in repo Settings if wanted |
+| 2026-11-23 | 1.1 | `engine.js`: `learn()`, `personalize()`, `recall()` added. Remembers name and `my X is Y`, answers "what is my X", uses name every 5th reply. Tested in node. NOTE: `eliza.html` still has the old engine until step 3.4 |
