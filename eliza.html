@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#10121a">
+  <title>DOCTOR | ELIZA</title>
+  <style>:root{color-scheme:dark;--bg:#10121a;--panel:#171a25;--line:#292d3b;--text:#f1f0f8;--muted:#9295a8;--accent:#b8a5ff;--accent2:#8d7be0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 35%,#29233d 0,transparent 45%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column}
+.topbar{height:76px;padding:0 clamp(20px,5vw,72px);display:flex;align-items:center;border-bottom:1px solid #ffffff10;background:#10121acc}
+.brand{display:flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;font-size:13px;font-weight:800;letter-spacing:.13em}
+.brand-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(145deg,#d3c8ff,#8875d6);color:#1b1730;font-size:18px}
+.brand small{display:block;margin-top:3px;color:#89849f;font-size:9px;letter-spacing:.22em}
+.status{margin:auto;display:flex;align-items:center;gap:8px;color:#9aa99f;font-size:9px;font-weight:700;letter-spacing:.16em}
+.status i{width:6px;height:6px;border-radius:50%;background:#8cdbb5;box-shadow:0 0 10px #8cdbb577}
+.new-session{border:1px solid #ffffff20;border-radius:9px;background:#ffffff08;color:#d8d5e4;padding:9px 13px;font-size:12px}
+.new-session:hover{border-color:#b8a5ff88;background:#b8a5ff12}
+.stage{width:min(760px,calc(100% - 36px));flex:1;min-height:0;margin:0 auto;display:flex;flex-direction:column;overflow-y:auto;padding:38px 0 24px;outline:0}
+.welcome{text-align:center;margin:auto 0}.welcome[hidden]{display:none}.conversation:not(:empty){margin-bottom:auto}
+.orb{width:76px;height:76px;margin:0 auto 25px;border-radius:50%;position:relative;background:radial-gradient(circle at 33% 28%,#f4eaff 0,#c6b4ff 13%,#8b78d8 42%,#302b51 78%);box-shadow:0 0 50px #a38cff35,inset -9px -10px 20px #171729;animation:drift 5s ease-in-out infinite}
+.orb:before,.orb:after{content:"";position:absolute;inset:-9px;border:1px solid #b8a5ff55;border-radius:50%;transform:rotate(-30deg) scaleY(.38)}
+.orb:after{transform:rotate(55deg) scaleY(.38)}
+.orb span{position:absolute;top:20px;left:24px;width:5px;height:5px;border-radius:50%;background:#fff}
+@keyframes drift{50%{transform:translateY(-5px)}}
+.eyebrow{color:var(--accent);font-size:9px;font-weight:700;letter-spacing:.2em}
+h1{margin:15px 0 12px;font-size:clamp(34px,5vw,52px);line-height:1.12;letter-spacing:-.055em}
+h1 em{font-style:normal;color:var(--accent)}
+.welcome-copy{max-width:430px;margin:0 auto;color:var(--muted);font-size:13px;line-height:1.8}
+.prompts{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin:26px auto 0}
+.prompts button{border:1px solid #ffffff1c;border-radius:999px;background:#ffffff06;color:#b9b8c8;padding:10px 14px;font-size:11px;transition:.2s}
+.prompts button:hover{border-color:#b8a5ff88;background:#b8a5ff12;color:white}
+.conversation{display:flex;flex-direction:column;gap:15px;padding:8px 0 18px}
+.msg{display:flex;flex-direction:column;gap:5px;max-width:80%;animation:rise .2s ease-out}.msg.user{align-self:flex-end;align-items:flex-end}.msg.bot{align-self:flex-start}.who{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7f8398}.msg.bot .who{color:var(--accent)}.bubble{margin:0;max-width:100%;padding:13px 16px;border-radius:15px;font-size:13px;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap;}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg.bot .bubble{background:#1c2030;border:1px solid #b8a5ff24;border-top-left-radius:4px;color:#e4e1ef}
+.msg.user .bubble{background:linear-gradient(135deg,#c7baff,#9583e5);border-top-right-radius:4px;color:#1b1730;font-weight:550}
+.composer-area{width:min(760px,calc(100% - 36px));margin:0 auto;padding:12px 0 22px}
+.composer{display:flex;gap:10px;padding:7px 8px 7px 17px;border:1px solid #ffffff25;border-radius:14px;background:#191d2bdc;box-shadow:0 14px 45px #0003}
+.composer:focus-within{border-color:#b8a5ff88;box-shadow:0 0 0 3px #b8a5ff12}
+.composer textarea{flex:1;min-width:0;border:0;outline:0;resize:none;background:transparent;color:var(--text);font-size:14px;line-height:1.5;padding:9px 0;max-height:140px}
+.composer textarea::placeholder{color:#777b90}
+.composer{align-items:flex-end}.send{width:39px;height:39px;border:0;border-radius:10px;background:linear-gradient(145deg,#c9bcff,#9583e5);color:#211b39;font-size:23px;line-height:1}
+.send:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.send:disabled{opacity:.4;cursor:not-allowed}
+.disclaimer{text-align:center;margin:11px 0 0;color:#686d81;font-size:9px;letter-spacing:.04em}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:600px){.topbar{height:66px;padding:0 16px}.status{font-size:8px}.new-session{padding:9px}.new-session span{display:none}.stage{padding:25px 0 18px}.welcome{margin:auto 0 22px}.orb{width:66px;height:66px}.prompts{flex-direction:column;align-items:stretch}.prompts button{text-align:left}.bubble{max-width:92%}.composer-area{padding-bottom:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status[data-state=error] i{background:#ff8a8a;box-shadow:0 0 10px #ff8a8a77}.status[data-state=loading] i,.status[data-state=ended] i{background:#e3c46f;box-shadow:0 0 10px #e3c46f66}
+.msg.typing .bubble{color:var(--muted);letter-spacing:.3em;animation:pulse 1s ease-in-out infinite}@keyframes pulse{50%{opacity:.4}}
+.msg.error .bubble{border-color:#ff8a8a55}.retry{align-self:flex-start;margin-top:4px;border:1px solid #b8a5ff66;border-radius:9px;background:#b8a5ff14;color:var(--text);padding:8px 14px;font-size:12px}
+@media(max-width:600px){.msg{max-width:92%}.composer textarea{font-size:16px}}
+textarea:focus-visible{outline:0}
+</style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="brand" href="./"><span class="brand-icon">D</span><span>DOCTOR <small>ELIZA</small></span></a>
+      <div class="status" id="status" data-state="loading" role="status"><i></i> <span id="status-text">LOADING SCRIPT</span></div>
+      <button id="new-session" class="new-session" type="button">＋ <span>New session</span></button>
+    </header>
+    <section class="stage" id="stage" tabindex="-1">
+      <div class="welcome" id="welcome">
+        <div class="orb" aria-hidden="true"><span></span></div>
+        <p class="eyebrow">A SPACE TO THINK OUT LOUD</p>
+        <h1>What has been<br><em>on your mind?</em></h1>
+        <p class="welcome-copy">Tell me what is happening. We can explore it together, one thought at a time.</p>
+        <div class="prompts" id="prompts">
+          <button type="button" data-prompt="I have been feeling unhappy lately.">I've been feeling unhappy</button>
+          <button type="button" data-prompt="I want to talk about my family.">I want to talk about family</button>
+          <button type="button" data-prompt="I am not sure what is bothering me.">I'm not sure what's bothering me</button>
+          <button type="button" data-prompt="I dreamed about my childhood.">I had a strange dream</button>
+          <button type="button" data-prompt="I feel lonely and nobody understands me.">I feel lonely</button>
+        </div>
+      </div>
+      <div class="conversation" id="conversation" role="log" aria-live="polite" aria-label="Conversation with DOCTOR"></div>
+    </section>
+    <section class="composer-area">
+      <form id="composer" class="composer">
+        <label class="sr-only" for="message">Message DOCTOR</label>
+        <textarea id="message" rows="1" maxlength="2000" autocomplete="off" enterkeyhint="send" placeholder="Write what's on your mind…" disabled></textarea>
+        <button class="send" id="send" type="submit" aria-label="Send message" disabled>↑</button>
+      </form>
+      <p class="disclaimer">DOCTOR is a rule-based chatbot inspired by ELIZA, not a medical professional. Enter to send · Shift+Enter for a new line.</p>
+    </section>
+  </main>
+  <script type="text/plain" id="doctor-script"># DOCTOR-style script for this project's ELIZA engine.
+# This is a RECREATED script inspired by Joseph Weizenbaum's 1966 DOCTOR (Rogerian therapist).
+# It is NOT the original historical script; rules and replies here are written for this project.
+# Format: key: word [rank] / decomp: pattern (* = any words, @group = synonym word) / reasmb: reply ((n) = nth capture, goto KEY, newkey).
+
+initial: How do you do. Please tell me your problem.
+final: Goodbye. Thank you for talking to me.
+
+quit: bye
+quit: goodbye
+quit: quit
+quit: exit
+
+pre: ive i have
+pre: ill i will
+pre: id i would
+pre: gonna going to
+pre: wanna want to
+pre: mum mom
+pre: mommy mom
+pre: daddy dad
+pre: parents family
+pre: mama mom
+pre: papa dad
+pre: dont don't
+pre: cant can't
+pre: wont won't
+pre: isnt isn't
+pre: recollect remember
+pre: recall remember
+pre: dreamt dreamed
+pre: dreams dream
+pre: maybe perhaps
+pre: certainly yes
+pre: machine computer
+pre: machines computer
+pre: computers computer
+pre: were was
+pre: you're you are
+pre: youre you are
+pre: i'm i am
+pre: im i am
+pre: same alike
+pre: identical alike
+pre: equivalent alike
+pre: apologize sorry
+pre: apologise sorry
+
+post: am are
+post: i've you have
+post: i'll you will
+post: i'd you would
+post: you've I have
+post: you'll I will
+post: you'd I would
+post: your my
+post: yours mine
+post: me you
+post: myself yourself
+post: yourself myself
+post: i you
+post: you I
+post: my your
+post: mine yours
+post: i'm you are
+
+synon: belief feel think believe wish
+synon: family mother mom mum father dad sister brother wife husband children child son daughter
+synon: desire want need
+synon: sad unhappy depressed sick miserable lonely
+synon: happy elated glad better
+synon: cannot can't
+synon: afraid afraid scared frightened terrified anxious nervous worried
+synon: angry angry mad furious annoyed upset irritated
+synon: friendlike friend friends buddy
+synon: workword work job boss school college exam exams homework teacher study class
+synon: everyone everybody nobody noone
+synon: be am is are was
+
+key: xnone
+  decomp: *
+    reasmb: I'm not sure I understand you fully.
+    reasmb: Please go on.
+    reasmb: What does that suggest to you?
+    reasmb: Do you feel strongly about discussing such things?
+    reasmb: That is interesting. Please continue.
+    reasmb: Tell me more about that.
+    reasmb: Does talking about this bother you?
+    reasmb: What makes you say that?
+    reasmb: How does that make you feel?
+    reasmb: Can you tell me a little more?
+
+key: sorry
+  decomp: *
+    reasmb: Please don't apologise.
+    reasmb: Apologies are not necessary.
+    reasmb: What feelings do you have when you apologise?
+
+key: remember 5
+  decomp: * i remember *
+    reasmb: Do you often think of (2)?
+    reasmb: Does thinking of (2) bring anything else to mind?
+    reasmb: What else do you remember?
+    reasmb: Why do you remember (2) just now?
+  decomp: * do you remember *
+    reasmb: Did you think I would forget (2)?
+    reasmb: Why do you think I should recall (2) now?
+    reasmb: What about (2)?
+    reasmb: goto what
+  decomp: *
+    reasmb: newkey
+
+key: forget 5
+  decomp: * i forget *
+    reasmb: Can you think of why you might forget (2)?
+    reasmb: Why can't you remember (2)?
+    reasmb: How often do you think of (2)?
+  decomp: *
+    reasmb: newkey
+
+key: if 3
+  decomp: * if *
+    reasmb: Do you think it's likely that (2)?
+    reasmb: Do you wish that (2)?
+    reasmb: What do you know about (2)?
+
+key: dreamed 4
+  decomp: * i dreamed *
+    reasmb: Really, (2)?
+    reasmb: Have you ever fantasized (2) while you were awake?
+    reasmb: Have you ever dreamed (2) before?
+    reasmb: goto dream
+  decomp: *
+    reasmb: goto dream
+
+key: dream 3
+  decomp: *
+    reasmb: What does that dream suggest to you?
+    reasmb: Do you dream often?
+    reasmb: What persons appear in your dreams?
+    reasmb: Do you believe that dreams have something to do with your problem?
+
+key: perhaps
+  decomp: *
+    reasmb: You don't seem quite certain.
+    reasmb: Why the uncertain tone?
+    reasmb: Can't you be more positive?
+    reasmb: You aren't sure?
+
+key: name 15
+  decomp: *
+    reasmb: I am not interested in names.
+    reasmb: I've told you before, I don't care about names. Please continue.
+
+key: hello
+  decomp: *
+    reasmb: How do you do. Please state your problem.
+    reasmb: Hi. What seems to be your problem?
+key: hi
+  decomp: *
+    reasmb: goto hello
+key: hey
+  decomp: *
+    reasmb: goto hello
+
+key: computer 50
+  decomp: *
+    reasmb: Do computers worry you?
+    reasmb: Why do you mention computers?
+    reasmb: What do you think machines have to do with your problem?
+    reasmb: Don't you think computers can help people?
+    reasmb: What about machines worries you?
+
+key: am
+  decomp: * am i *
+    reasmb: Do you believe you are (2)?
+    reasmb: Would you want to be (2)?
+    reasmb: What would it mean if you were (2)?
+    reasmb: goto what
+  decomp: *
+    reasmb: Why do you say 'am'?
+    reasmb: I don't understand that.
+
+key: are
+  decomp: * are you *
+    reasmb: Why are you interested in whether I am (2) or not?
+    reasmb: Would you prefer if I weren't (2)?
+    reasmb: Do you sometimes think I am (2)?
+    reasmb: goto what
+  decomp: * are *
+    reasmb: Did you think they might not be (2)?
+    reasmb: Would you like it if they were not (2)?
+
+key: your
+  decomp: * your *
+    reasmb: Why are you concerned over my (2)?
+    reasmb: What about your own (2)?
+    reasmb: Are you worried about someone else's (2)?
+
+key: was 2
+  decomp: * was i *
+    reasmb: What if you were (2)?
+    reasmb: Do you think you were (2)?
+    reasmb: Were you (2)?
+    reasmb: goto what
+  decomp: * i was *
+    reasmb: Were you really?
+    reasmb: Why do you tell me you were (2) now?
+  decomp: *
+    reasmb: newkey
+
+key: i
+  decomp: * i @desire *
+    reasmb: What would it mean to you if you got (3)?
+    reasmb: Why do you want (3)?
+    reasmb: Suppose you got (3) soon?
+  decomp: * i am * @sad *
+    reasmb: I am sorry to hear that you are (3).
+    reasmb: Do you think that coming here will help you not to be (3)?
+    reasmb: Can you explain what made you (3)?
+  decomp: * i am * @happy *
+    reasmb: What makes you (3) just now?
+    reasmb: Can you explain why you are suddenly (3)?
+  decomp: * i was *
+    reasmb: goto was
+  decomp: * i @belief i *
+    reasmb: Do you really think so?
+    reasmb: But you are not sure you (3).
+  decomp: * i * @belief * you *
+    reasmb: goto you
+  decomp: * i am *
+    reasmb: Is it because you are (2) that you came to me?
+    reasmb: How long have you been (2)?
+    reasmb: Do you enjoy being (2)?
+  decomp: * i @cannot *
+    reasmb: How do you know that you can't (3)?
+    reasmb: Have you tried?
+    reasmb: Perhaps you could (3) now.
+  decomp: * i don't *
+    reasmb: Don't you really (2)?
+    reasmb: Why don't you (2)?
+    reasmb: Does that trouble you?
+  decomp: * i feel *
+    reasmb: Tell me more about such feelings.
+    reasmb: Do you often feel (2)?
+    reasmb: Do you enjoy feeling (2)?
+  decomp: * i * you *
+    reasmb: Perhaps in your fantasies we (2) each other.
+    reasmb: Do you wish to (2) me?
+    reasmb: Do you (2) anyone else?
+  decomp: * i @afraid *
+    reasmb: What do you think is making you (3)?
+    reasmb: Is being (3) something that happens often?
+    reasmb: What would help you feel less (3)?
+    reasmb: When you feel (3), what goes through your mind?
+  decomp: * i am @angry *
+    reasmb: What has made you (3)?
+    reasmb: Do you often feel (3)?
+    reasmb: What do you think lies behind feeling (3)?
+    reasmb: How do you usually express being (3)?
+  decomp: * i hate *
+    reasmb: What is it about (2) that you hate?
+    reasmb: Has hating (2) always been so strong?
+    reasmb: What does hating (2) do for you?
+  decomp: * i love *
+    reasmb: What does loving (2) mean to you?
+    reasmb: Tell me more about your feelings for (2).
+    reasmb: How long have you felt this way about (2)?
+  decomp: * i think *
+    reasmb: Why do you think (2)?
+    reasmb: Are you certain about that?
+    reasmb: What makes you think (2)?
+    reasmb: Have you always thought (2)?
+  decomp: * i have *
+    reasmb: Why do you tell me you have (2)?
+    reasmb: How does having (2) affect you?
+    reasmb: Tell me more about having (2).
+  decomp: * i need *
+    reasmb: Why do you need (2)?
+    reasmb: Would getting (2) really help you?
+    reasmb: What would it mean to you to have (2)?
+  decomp: *
+    reasmb: You say (2)?
+    reasmb: Can you elaborate on that?
+    reasmb: Do you say (2) for some special reason?
+
+key: you
+  decomp: * you remind me of *
+    reasmb: goto alike
+  decomp: * you are *
+    reasmb: What makes you think I am (2)?
+    reasmb: Does it please you to believe I am (2)?
+    reasmb: Do you sometimes wish you were (2)?
+  decomp: * you * me *
+    reasmb: Why do you think I (2) you?
+    reasmb: What makes you think I (2) you?
+    reasmb: Suppose I did (2) you. What would that mean?
+  decomp: * you *
+    reasmb: We were discussing you, not me.
+    reasmb: What are your feelings now?
+
+key: yes
+  decomp: *
+    reasmb: You seem to be quite positive.
+    reasmb: You are sure.
+    reasmb: I see.
+    reasmb: I understand.
+
+key: no
+  decomp: *
+    reasmb: Are you saying no just to be negative?
+    reasmb: You are being a bit negative.
+    reasmb: Why not?
+    reasmb: Why 'no'?
+
+key: my 2
+  decomp: $ * my *
+    reasmb: Let's discuss further why your (2).
+    reasmb: Earlier you said your (2).
+  decomp: * my * @family *
+    reasmb: Tell me more about your family.
+    reasmb: Who else in your family (4)?
+  decomp: * my *
+    reasmb: Your (2)?
+    reasmb: Why do you say your (2)?
+    reasmb: Is it important to you that your (2)?
+
+key: can
+  decomp: * can you *
+    reasmb: You believe I can (2), don't you?
+    reasmb: goto what
+    reasmb: You want me to be able to (2).
+  decomp: * can i *
+    reasmb: Whether or not you can (2) depends on you more than on me.
+    reasmb: Do you want to be able to (2)?
+    reasmb: goto what
+  decomp: *
+    reasmb: newkey
+
+key: what
+  decomp: *
+    reasmb: Why do you ask?
+    reasmb: Does that question interest you?
+    reasmb: What is it you really want to know?
+    reasmb: Are such questions much on your mind?
+    reasmb: What answer would please you most?
+    reasmb: What do you think?
+    reasmb: What comes to mind when you ask that?
+
+key: how
+  decomp: *
+    reasmb: goto what
+key: when
+  decomp: *
+    reasmb: goto what
+key: who
+  decomp: *
+    reasmb: goto what
+key: where
+  decomp: *
+    reasmb: goto what
+
+key: why
+  decomp: * why don't you *
+    reasmb: Do you believe I don't (2)?
+    reasmb: Perhaps I will (2) in good time.
+    reasmb: Should you (2) yourself?
+    reasmb: goto what
+  decomp: * why can't i *
+    reasmb: Do you think you should be able to (2)?
+    reasmb: Do you want to be able to (2)?
+    reasmb: Do you believe this will help you to (2)?
+    reasmb: Have you any idea why you can't (2)?
+    reasmb: goto what
+  decomp: *
+    reasmb: goto what
+
+key: because
+  decomp: *
+    reasmb: Is that the real reason?
+    reasmb: Don't any other reasons come to mind?
+    reasmb: What other reasons might there be?
+
+key: everyone 2
+  decomp: * @everyone *
+    reasmb: Really, (2)?
+    reasmb: Surely not (2).
+    reasmb: Can you think of anyone in particular?
+    reasmb: Who, for example?
+    reasmb: Someone special perhaps?
+
+key: always 1
+  decomp: *
+    reasmb: Can you think of a specific example?
+    reasmb: When?
+    reasmb: What incident are you thinking of?
+    reasmb: Really, always?
+
+key: alike 10
+  decomp: *
+    reasmb: In what way?
+    reasmb: What resemblance do you see?
+    reasmb: What does that similarity suggest to you?
+    reasmb: What other connections do you see?
+
+key: like 10
+  decomp: * @be * like *
+    reasmb: goto alike
+  decomp: *
+    reasmb: newkey
+
+# --- topic keywords (recreated for this project) ---
+
+key: family 4
+  decomp: * family *
+    reasmb: Tell me more about your family.
+    reasmb: How do you get along with your family?
+    reasmb: What role does your family play in how you feel?
+    reasmb: Is your family important to you?
+  decomp: *
+    reasmb: goto family
+
+key: mother 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: father 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: sister 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: brother 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: wife 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: husband 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: child 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: children 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: son 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: daughter 4
+  decomp: * @family *
+    reasmb: Tell me more about your (2).
+    reasmb: How do you feel about your (2)?
+    reasmb: What is your relationship with your (2) like?
+    reasmb: Does your (2) have anything to do with how you feel?
+    reasmb: What comes to mind when you think of your (2)?
+
+key: mom 4
+  decomp: * mom *
+    reasmb: Tell me more about your mother.
+    reasmb: What was your mother like when you were younger?
+    reasmb: How do you feel about your mother?
+    reasmb: How does your mother relate to how you feel now?
+
+key: dad 4
+  decomp: * dad *
+    reasmb: Tell me more about your father.
+    reasmb: How did your father treat you?
+    reasmb: How do you feel about your father?
+    reasmb: Does your father have something to do with this?
+
+key: friend 3
+  decomp: * friend *
+    reasmb: Tell me more about your friend.
+    reasmb: What does your friendship mean to you?
+    reasmb: Do your friends understand you?
+    reasmb: How do your friends affect how you feel?
+
+key: friends 3
+  decomp: *
+    reasmb: goto friend
+
+key: lonely 3
+  decomp: *
+    reasmb: How long have you felt lonely?
+    reasmb: What does being alone feel like for you?
+    reasmb: Who would you like to be closer to?
+    reasmb: When do you feel most alone?
+
+key: alone 3
+  decomp: *
+    reasmb: goto lonely
+
+key: love 3
+  decomp: * love *
+    reasmb: What does love mean to you?
+    reasmb: Tell me more about love in your life.
+    reasmb: Has love been difficult for you?
+    reasmb: How do you feel when you think about love?
+
+key: boyfriend 3
+  decomp: *
+    reasmb: Tell me about your relationship.
+    reasmb: How do you feel about your partner?
+    reasmb: What matters most to you in a relationship?
+    reasmb: Is this relationship what you hoped it would be?
+
+key: girlfriend 3
+  decomp: *
+    reasmb: goto boyfriend
+
+key: afraid 3
+  decomp: *
+    reasmb: What are you afraid of?
+    reasmb: Does being afraid happen often?
+    reasmb: What do you think you fear most?
+    reasmb: How do you cope when you feel afraid?
+
+key: scared 3
+  decomp: *
+    reasmb: goto afraid
+
+key: fear 3
+  decomp: *
+    reasmb: goto afraid
+
+key: anxious 3
+  decomp: *
+    reasmb: What makes you anxious?
+    reasmb: When do you notice this anxiety most?
+    reasmb: What does the anxiety feel like?
+    reasmb: What do you imagine might happen?
+
+key: angry 3
+  decomp: *
+    reasmb: What makes you angry?
+    reasmb: Who or what are you angry at?
+    reasmb: How do you handle anger?
+    reasmb: What do you think the anger is telling you?
+
+key: mad 3
+  decomp: *
+    reasmb: goto angry
+
+key: work 3
+  decomp: *
+    reasmb: Tell me more about your work.
+    reasmb: How do you feel about your work?
+    reasmb: Does your work trouble you?
+    reasmb: What about your work comes to mind most?
+
+key: job 3
+  decomp: *
+    reasmb: goto work
+
+key: school 3
+  decomp: *
+    reasmb: What is school like for you?
+    reasmb: How do you feel about your studies?
+    reasmb: Does school cause you worry?
+    reasmb: What would you change about school?
+
+key: exam 3
+  decomp: *
+    reasmb: goto school
+
+key: study 3
+  decomp: *
+    reasmb: goto school
+
+key: sad 2
+  decomp: *
+    reasmb: Why do you think you feel sad?
+    reasmb: How long have you felt sad?
+    reasmb: What do you do when you feel sad?
+    reasmb: What would make you feel less sad?
+
+key: unhappy 2
+  decomp: *
+    reasmb: goto sad
+
+key: happy 2
+  decomp: *
+    reasmb: What makes you feel happy?
+    reasmb: Tell me more about what makes you happy.
+    reasmb: Do you feel happy often?
+    reasmb: What would make you happier?
+
+key: childhood 3
+  decomp: *
+    reasmb: What was your childhood like?
+    reasmb: What do you remember most from your childhood?
+    reasmb: How does your childhood affect you today?
+    reasmb: Tell me more about when you were a child.
+
+key: never 1
+  decomp: *
+    reasmb: Never? Can you think of a time when it happened?
+    reasmb: Why do you say never?
+    reasmb: What would it mean if it did happen?
+    reasmb: Is it really never?
+
+key: tired 2
+  decomp: *
+    reasmb: What is making you tired?
+    reasmb: Is it your body or your mind that is tired?
+    reasmb: What would rest look like for you?
+
+key: think 1
+  decomp: * you think *
+    reasmb: What do you think?
+    reasmb: Does it matter what I think?
+  decomp: *
+    reasmb: newkey
+
+key: feel 1
+  decomp: * i feel *
+    reasmb: Tell me more about such feelings.
+    reasmb: Do you often feel (2)?
+    reasmb: What do you think brings on feeling (2)?
+    reasmb: Of what does feeling (2) remind you?
+  decomp: *
+    reasmb: newkey
+
+key: die 3
+  decomp: *
+    reasmb: Thoughts like that can be heavy. How long have you been carrying them?
+    reasmb: I'm only a simple program. If you may be in danger, please contact a local emergency number or someone you trust right now.
+
+key: suicide 5
+  decomp: *
+    reasmb: I'm only a simple program and cannot help in a crisis. If you may harm yourself, please contact local emergency services or a crisis line, or reach out to someone you trust right now.
+</script>
+<script type="module">const MAX_WORDS = 80;
+const normalize = v => String(v ?? "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z0-9' ]/g, " ").replace(/\s+/g, " ").trim();
+const words = s => s.split(" ").filter(Boolean);
+
+function parseScript(source) {
+  const d = { initial: "", final: "", quit: [], pre: new Map(), post: new Map(), synonyms: {}, keywords: [] };
+  let key = null, dec = null, m;
+  for (const raw of String(source).split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    if ((m = line.match(/^initial:\s*(.*)$/i))) d.initial = m[1];
+    else if ((m = line.match(/^final:\s*(.*)$/i))) d.final = m[1];
+    else if ((m = line.match(/^quit:\s*(.*)$/i))) d.quit.push(normalize(m[1]));
+    else if ((m = line.match(/^pre:\s*(\S+)\s+(.+)$/i))) d.pre.set(m[1].toLowerCase(), m[2].toLowerCase());
+    else if ((m = line.match(/^post:\s*(\S+)\s+(.+)$/i))) d.post.set(m[1].toLowerCase(), m[2]);
+    else if ((m = line.match(/^synon:\s*(.+)$/i))) {
+      const g = m[1].toLowerCase().split(/\s+/);
+      for (const w of g) d.synonyms[w] = g;
+      d.synonyms[g[0]] = g;
+    } else if ((m = line.match(/^key:\s*(\S+)(?:\s+(-?\d+))?$/i))) {
+      key = { word: m[1].toLowerCase(), rank: Number(m[2] || 0), decomps: [] };
+      d.keywords.push(key); dec = null;
+    } else if ((m = line.match(/^decomp:\s*(.*)$/i)) && key) {
+      let p = m[1].toLowerCase().trim(), memory = false;
+      if (p.startsWith("$")) { memory = true; p = p.slice(1).trim(); }
+      key.decomps.push(dec = { pattern: words(p), memory, replies: [], cursor: 0 });
+    } else if ((m = line.match(/^reasmb:\s*(.*)$/i)) && dec) dec.replies.push(m[1]);
+  }
+  d.byWord = new Map(d.keywords.map(k => [k.word, k]));
+  return d;
+}
+
+// Wildcard matcher: "*" = any run of words (shortest first), "@group" = one synonym word (captured).
+// Failed (pattern, position) pairs are memoised, so matching stays polynomial on long input.
+function match(pattern, input, syn) {
+  const dead = new Set();
+  const walk = (pi, wi, caps) => {
+    const id = pi * 1000 + wi;
+    if (dead.has(id)) return null;
+    let res = null;
+    if (pi === pattern.length) res = wi === input.length ? caps : null;
+    else {
+      const t = pattern[pi];
+      if (t === "*") {
+        for (let end = wi; end <= input.length && !res; end++) res = walk(pi + 1, end, [...caps, input.slice(wi, end).join(" ")]);
+      } else if (t[0] === "@") {
+        const g = syn[t.slice(1)] || [t.slice(1)];
+        if (wi < input.length && g.includes(input[wi])) res = walk(pi + 1, wi + 1, [...caps, input[wi]]);
+      } else if (wi < input.length && input[wi] === t) res = walk(pi + 1, wi + 1, caps);
+    }
+    if (!res) dead.add(id);
+    return res;
+  };
+  return walk(0, 0, []);
+}
+
+class ElizaEngine {
+  constructor(script) {
+    this.data = parseScript(script);
+    if (!this.data.keywords.length) throw new Error("The script contains no keywords.");
+    this.reset();
+  }
+
+  get greeting() { return this.data.initial || "How do you do. Please tell me your problem."; }
+
+  reset() {
+    this.closed = false; this.memory = []; this.last = "";
+    for (const k of this.data.keywords) for (const d of k.decomps) d.cursor = 0;
+  }
+
+  reflect(text) {
+    const w = words(text), out = [];
+    for (let i = 0; i < w.length; i++) {
+      if (w[i] === "you" && w[i + 1] === "are") { out.push("I", "am"); i++; }
+      else if (w[i] === "you" && i === w.length - 1 && i > 0) out.push("me");
+      else out.push(this.data.post.get(w[i]) ?? w[i]);
+    }
+    return out.join(" ").replace(/\byou was\b/g, "you were");
+  }
+
+  fill(template, caps) {
+    const text = template.replace(/\((\d+)\)/g, (_, n) => this.reflect(caps[n - 1] || "")).replace(/\s+([?.!,])/g, "$1").replace(/\s+/g, " ").trim();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  // Returns a reply string, or null for "try the next keyword" (NEWKEY).
+  apply(key, input, depth = 0) {
+    if (!key || depth > 8) return null;
+    for (const dec of key.decomps) {
+      const caps = match(dec.pattern, input, this.data.synonyms);
+      if (!caps || !dec.replies.length) continue;
+      const reply = dec.replies[dec.cursor++ % dec.replies.length];
+      if (dec.memory) { this.memory.push(this.fill(reply, caps)); continue; }
+      if (reply.toLowerCase() === "newkey") return null;
+      const go = reply.match(/^goto\s+(\S+)$/i);
+      if (go) {
+        const out = this.apply(this.data.byWord.get(go[1].toLowerCase()), input, depth + 1);
+        if (out) return out;
+        continue;
+      }
+      return this.fill(reply, caps);
+    }
+    return null;
+  }
+
+  respond(message) {
+    const raw = String(message ?? "").slice(0, 2000);
+    let text = normalize(raw);
+    if (!text) return { text: this.pick("xnone", [], "Please go on."), done: false };
+    const sub = t => words(t).map(w => this.data.pre.get(w) ?? w).join(" ");
+    const clean = sub(text);
+    const w0 = words(clean);
+    if (w0.length <= 2 && w0.some(w => this.data.quit.includes(w)) || this.data.quit.includes(clean)) {
+      this.closed = true;
+      return { text: this.data.final || "Goodbye.", done: true };
+    }
+    // Classic clause handling: use the first clause (split at . , ; ! ?) that holds a keyword.
+    const clauses = raw.split(/[.,;!?]+/).map(c => words(sub(normalize(c))).slice(0, MAX_WORDS)).filter(c => c.length);
+    const known = c => c.filter(w => this.data.byWord.has(w) && w !== "xnone");
+    const clause = clauses.find(c => known(c).length) || words(clean).slice(0, MAX_WORDS);
+    const found = [...new Set(known(clause))].map(w => this.data.byWord.get(w))
+      .sort((a, b) => b.rank - a.rank || clause.indexOf(a.word) - clause.indexOf(b.word));
+    for (const key of found) {
+      const out = this.apply(key, clause);
+      if (out) { this.last = out; return { text: out, done: false, keyword: key.word }; }
+    }
+    if (this.memory.length) return { text: this.memory.shift(), done: false, keyword: "memory" };
+    return { text: this.pick("xnone", clause, "Please go on."), done: false, keyword: "xnone" };
+  }
+
+  pick(word, input, fallback) {
+    return this.apply(this.data.byWord.get(word), input) || fallback;
+  }
+}
+
+
+const $ = s => document.querySelector(s);
+const stage = $("#stage"), log = $("#conversation"), form = $("#composer"), input = $("#message"), send = $("#send");
+const welcome = $("#welcome"), prompts = $("#prompts"), newBtn = $("#new-session"), statusEl = $("#status"), statusText = $("#status-text");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const touch = matchMedia("(pointer: coarse)").matches;
+let engine = null, token = 0, busy = false;
+
+function setStatus(state, text) { statusEl.dataset.state = state; statusText.textContent = text; }
+function scrollDown() { stage.scrollTo({ top: stage.scrollHeight, behavior: reduceMotion ? "auto" : "smooth" }); }
+
+function addMessage(text, role, extra = "") {
+  const row = document.createElement("article");
+  row.className = `msg ${role} ${extra}`.trim();
+  const who = document.createElement("span");
+  who.className = "who";
+  who.textContent = role === "user" ? "You" : "DOCTOR";
+  const bubble = document.createElement("p");
+  bubble.className = "bubble";
+  bubble.textContent = text;
+  row.append(who, bubble);
+  log.append(row);
+  scrollDown();
+  return row;
+}
+
+function setComposer(enabled, placeholder) {
+  input.disabled = !enabled;
+  send.disabled = !enabled;
+  if (placeholder) input.placeholder = placeholder;
+}
+
+function showError(message) {
+  engine = null;
+  log.replaceChildren();
+  welcome.hidden = true;
+  setStatus("error", "SCRIPT UNAVAILABLE");
+  setComposer(false, "DOCTOR is unavailable.");
+  const row = addMessage(`Unable to start DOCTOR: ${message}`, "bot", "error");
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "retry";
+  retry.textContent = "Try again";
+  retry.addEventListener("click", startSession, { once: true });
+  row.append(retry);
+  retry.focus();
+}
+
+async function loadScript() {
+  const inline = $("#doctor-script");
+  if (inline) return inline.textContent;
+  const res = await fetch("./doctor.script", { cache: "no-store" });
+  if (!res.ok) throw new Error(`the dialogue script could not be loaded (HTTP ${res.status}). If you opened this file directly, serve the folder over http instead.`);
+  return res.text();
+}
+
+async function startSession() {
+  const mine = ++token;
+  busy = false;
+  log.replaceChildren();
+  welcome.hidden = false;
+  setComposer(false, "Loading DOCTOR…");
+  setStatus("loading", "LOADING SCRIPT");
+  try {
+    const source = await loadScript();
+    if (mine !== token) return;
+    if (!engine) engine = new ElizaEngine(source);
+    else engine.reset();
+    setStatus("ready", "SCRIPT ACTIVE");
+    setComposer(true, "Write what's on your mind…");
+    addMessage(engine.greeting, "bot");
+    if (!touch) input.focus();
+  } catch (error) {
+    if (mine === token) showError(error.message || String(error));
+  }
+}
+
+function submitMessage(value) {
+  const message = String(value).trim();
+  if (!message || !engine || engine.closed || busy) return;
+  busy = true;
+  welcome.hidden = true;
+  addMessage(message, "user");
+  input.value = "";
+  autosize();
+  const mine = token;
+  let result;
+  try { result = engine.respond(message); }
+  catch (error) { console.error(error); result = { text: "I'm sorry, something went wrong in my thinking. Please go on.", done: false }; }
+  const typing = addMessage("…", "bot", "typing");
+  setTimeout(() => {
+    if (mine !== token) return;
+    typing.remove();
+    addMessage(result.text, "bot");
+    busy = false;
+    if (result.done) {
+      setStatus("ended", "SESSION ENDED");
+      setComposer(false, "Session ended. Start a new session to continue.");
+      newBtn.focus();
+    } else input.focus();
+  }, reduceMotion ? 0 : Math.min(300 + result.text.length * 12, 1000));
+}
+
+function autosize() {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 140) + "px";
+}
+
+form.addEventListener("submit", e => { e.preventDefault(); submitMessage(input.value); });
+input.addEventListener("input", autosize);
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); }
+});
+prompts.addEventListener("click", e => {
+  const b = e.target.closest("button[data-prompt]");
+  if (b) submitMessage(b.dataset.prompt);
+});
+newBtn.addEventListener("click", startSession);
+
+startSession();
+</script>
+  <noscript><p style="text-align:center;color:#ccc">DOCTOR needs JavaScript to run.</p></noscript>
+</body>
+</html>
