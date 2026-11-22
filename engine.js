@@ -68,7 +68,7 @@ export class ElizaEngine {
 
   reset() {
     this.closed = false; this.memory = []; this.last = "";
-    // Step 1.1: what Nutrono has learned about the user this session.
+    // Step 1.1: what Nutrino has learned about the user this session.
     this.profile = { name: null, facts: new Map() };
     this.recalled = new Set();
     this.rot = {};

@@ -1,8 +1,8 @@
-# Nutrono
+# Nutrino
 
 A static, browser-only AI chatbot. No server, no API, no dependencies. It runs on GitHub Pages.
 
-Started as a DOCTOR/ELIZA recreation. Nutrono is being upgraded step by step into a smarter, more natural conversationalist.
+Started as a DOCTOR/ELIZA recreation. Nutrino is being upgraded step by step into a smarter, more natural conversationalist.
 
 **Not a medical tool.** It is a rule-based program, not a professional.
 
@@ -26,7 +26,7 @@ Run: serve this folder (`python3 -m http.server`) and open `index.html`.
 Legend: `[x]` done and pushed, `[~]` in progress, `[ ]` not started.
 
 ### Phase 0 - Rename and setup
-- [x] 0.1 Rename DOCTOR to Nutrono in `index.html`, `app.js`, `eliza.html`
+- [x] 0.1 Rename DOCTOR to Nutrino in `index.html`, `app.js`, `eliza.html`
 - [x] 0.2 Update `README.md` project description
 
 ### Phase 1 - Smarter conversation core
@@ -54,6 +54,7 @@ Legend: `[x]` done and pushed, `[~]` in progress, `[ ]` not started.
 | Date | Step | Commit note |
 |------|------|-------------|
 | 2026-11-23 | Setup | README with roadmap created |
-| 2026-11-23 | 0.1 | Branding renamed to Nutrono (UI text, title, logo letter). GitHub repo name is still `nutrino`; rename it in repo Settings if wanted |
+| 2026-11-23 | 0.1 | DOCTOR branding replaced in UI text, title and logo letter |
 | 2026-11-23 | 1.1 | `engine.js`: `learn()`, `personalize()`, `recall()` added. Remembers name and `my X is Y`, answers "what is my X", uses name every 5th reply. Tested in node. NOTE: `eliza.html` still has the old engine until step 3.4 |
 | 2026-11-23 | 1.2 | `engine.js`: `intent()`, `askBack()`, `choose()` added. Name-aware greetings, thanks replies, and a question fallback instead of "please go on". Tested in node |
+| 2026-11-23 | 0.3 | Final project name is **Nutrino** (matches the repo `tanvirpersonal/nutrino`). Briefly renamed to Nutrono, then reverted at the owner's request. Use Nutrino everywhere |
