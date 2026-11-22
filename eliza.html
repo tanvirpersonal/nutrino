@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#10121a">
-  <title>DOCTOR | ELIZA</title>
+  <title>Nutrono | Static AI</title>
   <style>:root{color-scheme:dark;--bg:#10121a;--panel:#171a25;--line:#292d3b;--text:#f1f0f8;--muted:#9295a8;--accent:#b8a5ff;--accent2:#8d7be0}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 35%,#29233d 0,transparent 45%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -61,7 +61,7 @@ textarea:focus-visible{outline:0}
 <body>
   <main class="app">
     <header class="topbar">
-      <a class="brand" href="./"><span class="brand-icon">D</span><span>DOCTOR <small>ELIZA</small></span></a>
+      <a class="brand" href="./"><span class="brand-icon">N</span><span>Nutrono <small>AI</small></span></a>
       <div class="status" id="status" data-state="loading" role="status"><i></i> <span id="status-text">LOADING SCRIPT</span></div>
       <button id="new-session" class="new-session" type="button">＋ <span>New session</span></button>
     </header>
@@ -79,15 +79,15 @@ textarea:focus-visible{outline:0}
           <button type="button" data-prompt="I feel lonely and nobody understands me.">I feel lonely</button>
         </div>
       </div>
-      <div class="conversation" id="conversation" role="log" aria-live="polite" aria-label="Conversation with DOCTOR"></div>
+      <div class="conversation" id="conversation" role="log" aria-live="polite" aria-label="Conversation with Nutrono"></div>
     </section>
     <section class="composer-area">
       <form id="composer" class="composer">
-        <label class="sr-only" for="message">Message DOCTOR</label>
+        <label class="sr-only" for="message">Message Nutrono</label>
         <textarea id="message" rows="1" maxlength="2000" autocomplete="off" enterkeyhint="send" placeholder="Write what's on your mind…" disabled></textarea>
         <button class="send" id="send" type="submit" aria-label="Send message" disabled>↑</button>
       </form>
-      <p class="disclaimer">DOCTOR is a rule-based chatbot inspired by ELIZA, not a medical professional. Enter to send · Shift+Enter for a new line.</p>
+      <p class="disclaimer">Nutrono is a rule-based static AI, not a medical professional. Enter to send · Shift+Enter for a new line.</p>
     </section>
   </main>
   <script type="text/plain" id="doctor-script"># DOCTOR-style script for this project's ELIZA engine.
@@ -919,7 +919,7 @@ function addMessage(text, role, extra = "") {
   row.className = `msg ${role} ${extra}`.trim();
   const who = document.createElement("span");
   who.className = "who";
-  who.textContent = role === "user" ? "You" : "DOCTOR";
+  who.textContent = role === "user" ? "You" : "Nutrono";
   const bubble = document.createElement("p");
   bubble.className = "bubble";
   bubble.textContent = text;
@@ -940,8 +940,8 @@ function showError(message) {
   log.replaceChildren();
   welcome.hidden = true;
   setStatus("error", "SCRIPT UNAVAILABLE");
-  setComposer(false, "DOCTOR is unavailable.");
-  const row = addMessage(`Unable to start DOCTOR: ${message}`, "bot", "error");
+  setComposer(false, "Nutrono is unavailable.");
+  const row = addMessage(`Unable to start Nutrono: ${message}`, "bot", "error");
   const retry = document.createElement("button");
   retry.type = "button";
   retry.className = "retry";
@@ -964,7 +964,7 @@ async function startSession() {
   busy = false;
   log.replaceChildren();
   welcome.hidden = false;
-  setComposer(false, "Loading DOCTOR…");
+  setComposer(false, "Loading Nutrono…");
   setStatus("loading", "LOADING SCRIPT");
   try {
     const source = await loadScript();
@@ -1024,6 +1024,6 @@ newBtn.addEventListener("click", startSession);
 
 startSession();
 </script>
-  <noscript><p style="text-align:center;color:#ccc">DOCTOR needs JavaScript to run.</p></noscript>
+  <noscript><p style="text-align:center;color:#ccc">Nutrono needs JavaScript to run.</p></noscript>
 </body>
 </html>

@@ -26,8 +26,8 @@ Run: serve this folder (`python3 -m http.server`) and open `index.html`.
 Legend: `[x]` done and pushed, `[~]` in progress, `[ ]` not started.
 
 ### Phase 0 - Rename and setup
-- [~] 0.1 Rename DOCTOR to Nutrono in `index.html`, `app.js`, `eliza.html`
-- [ ] 0.2 Update `README.md` project description (done in this commit)
+- [x] 0.1 Rename DOCTOR to Nutrono in `index.html`, `app.js`, `eliza.html`
+- [x] 0.2 Update `README.md` project description
 
 ### Phase 1 - Smarter conversation core
 - [ ] 1.1 Conversation memory: remember the user's name, and facts they state (`my X is Y`)
@@ -54,3 +54,4 @@ Legend: `[x]` done and pushed, `[~]` in progress, `[ ]` not started.
 | Date | Step | Commit note |
 |------|------|-------------|
 | 2026-11-23 | Setup | README with roadmap created |
+| 2026-11-23 | 0.1 | Branding renamed to Nutrono (UI text, title, logo letter). GitHub repo name is still `nutrino`; rename it in repo Settings if wanted |

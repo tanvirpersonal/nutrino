@@ -15,7 +15,7 @@ function addMessage(text, role, extra = "") {
   row.className = `msg ${role} ${extra}`.trim();
   const who = document.createElement("span");
   who.className = "who";
-  who.textContent = role === "user" ? "You" : "DOCTOR";
+  who.textContent = role === "user" ? "You" : "Nutrono";
   const bubble = document.createElement("p");
   bubble.className = "bubble";
   bubble.textContent = text;
@@ -36,8 +36,8 @@ function showError(message) {
   log.replaceChildren();
   welcome.hidden = true;
   setStatus("error", "SCRIPT UNAVAILABLE");
-  setComposer(false, "DOCTOR is unavailable.");
-  const row = addMessage(`Unable to start DOCTOR: ${message}`, "bot", "error");
+  setComposer(false, "Nutrono is unavailable.");
+  const row = addMessage(`Unable to start Nutrono: ${message}`, "bot", "error");
   const retry = document.createElement("button");
   retry.type = "button";
   retry.className = "retry";
@@ -60,7 +60,7 @@ async function startSession() {
   busy = false;
   log.replaceChildren();
   welcome.hidden = false;
-  setComposer(false, "Loading DOCTOR…");
+  setComposer(false, "Loading Nutrono…");
   setStatus("loading", "LOADING SCRIPT");
   try {
     const source = await loadScript();
