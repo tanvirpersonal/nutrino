@@ -71,6 +71,7 @@ export class ElizaEngine {
     // Step 1.1: what Nutrono has learned about the user this session.
     this.profile = { name: null, facts: new Map() };
     this.recalled = new Set();
+    this.rot = {};
     this.turns = 0;
     for (const k of this.data.keywords) for (const d of k.decomps) d.cursor = 0;
   }
@@ -98,6 +99,29 @@ export class ElizaEngine {
       if (!NOT_NAMES.has(key) && key !== "name") p.facts.set(key, this.reflect(normalize(m[2])));
     }
     return null;
+  }
+
+  // Step 1.2: rotate through a reply pool without repeating the last pick.
+  choose(pool, tag) {
+    this.rot = this.rot || {};
+    const i = (this.rot[tag] = (this.rot[tag] ?? -1) + 1) % pool.length;
+    return pool[i];
+  }
+
+  // Step 1.2: detect greetings and thanks. Returns { tag, text } or null.
+  intent(raw) {
+    const t = normalize(raw), name = this.profile.name, n = name ? `, ${name}` : "";
+    if (words(t).length <= 5 && /^(hi|hello|hey|hiya|howdy|yo|good (morning|afternoon|evening)|greetings)\b/.test(t))
+      return { tag: "greet", text: this.choose([`Hello${n}. What is on your mind today?`, `Hi${n}. How are you feeling?`, `Good to see you${n}. What would you like to talk about?`], "greet") };
+    if (/\b(thanks|thank you|thx|cheers)\b/.test(t) && words(t).length <= 8)
+      return { tag: "thanks", text: this.choose([`You are welcome${n}. Is there more you would like to explore?`, `Glad I could help${n}. What else is on your mind?`, `Any time${n}. Shall we continue?`], "thanks") };
+    return null;
+  }
+
+  // Step 1.2: a question no rule matched still deserves more than "please go on".
+  askBack(raw) {
+    if (!/\?\s*$/.test(raw.trim()) && !/^\s*(who|what|when|where|why|how|can|could|do|does|is|are|will|would|should)\b/i.test(raw)) return null;
+    return this.choose(["That is a good question. What do you think the answer might be?", "I would rather hear your view first. What comes to mind?", "Why do you ask that?", "What answer would help you most right now?"], "ask");
   }
 
   // Step 1.1: use the name now and then, so replies feel personal.
@@ -166,6 +190,8 @@ export class ElizaEngine {
     }
     const learned = this.learn(raw);
     if (learned) return { text: this.personalize(learned), done: false, keyword: "profile" };
+    const intent = this.intent(raw);
+    if (intent) return { text: intent.text, done: false, keyword: intent.tag };
     // Classic clause handling: use the first clause (split at . , ; ! ?) that holds a keyword.
     const clauses = raw.split(/[.,;!?]+/).map(c => words(sub(normalize(c))).slice(0, MAX_WORDS)).filter(c => c.length);
     const known = c => c.filter(w => this.data.byWord.has(w) && w !== "xnone");
@@ -177,6 +203,8 @@ export class ElizaEngine {
       if (out) { this.last = out; return { text: this.personalize(out), done: false, keyword: key.word }; }
     }
     if (this.memory.length) return { text: this.personalize(this.memory.shift()), done: false, keyword: "memory" };
+    const asked = this.askBack(raw);
+    if (asked) return { text: this.personalize(asked), done: false, keyword: "question" };
     const recalled = this.recall();
     if (recalled) return { text: this.personalize(recalled), done: false, keyword: "recall" };
     return { text: this.personalize(this.pick("xnone", clause, "Please go on.")), done: false, keyword: "xnone" };
